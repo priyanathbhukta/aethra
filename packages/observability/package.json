@@ -1,0 +1,20 @@
+{
+  "name": "@aethra/observability",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pino": "^9.2.0"
+  },
+  "devDependencies": {
+    "pino-pretty": "^11.2.1",
+    "rimraf": "^5.0.7",
+    "typescript": "^5.5.2"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "@aethra/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Mobile build scaffolded'",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aethra/api-contracts": "workspace:*",
+    "@aethra/shared-types": "workspace:*"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.7",
+    "typescript": "^5.5.2"
+  }
+}

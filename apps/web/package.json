@@ -1,0 +1,19 @@
+{
+  "name": "@aethra/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Web UI build scaffolded'",
+    "dev": "echo 'Web dev scaffolded'",
+    "clean": "rimraf .next",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aethra/api-contracts": "workspace:*",
+    "@aethra/shared-types": "workspace:*"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.7",
+    "typescript": "^5.5.2"
+  }
+}

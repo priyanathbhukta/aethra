@@ -1,0 +1,30 @@
+{
+  "name": "@aethra/catalogue-service",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "dev": "tsc --watch",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/tests/**/*.test.js || true"
+  },
+  "dependencies": {
+    "@aethra/api-contracts": "workspace:*",
+    "@aethra/config": "workspace:*",
+    "@aethra/event-contracts": "workspace:*",
+    "@aethra/observability": "workspace:*",
+    "@aethra/shared-types": "workspace:*",
+    "express": "^4.19.2",
+    "kysely": "^0.27.4",
+    "pg": "^8.12.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.9",
+    "@types/pg": "^8.11.6",
+    "rimraf": "^5.0.7",
+    "typescript": "^5.5.2"
+  }
+}
