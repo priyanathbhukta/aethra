@@ -3,7 +3,10 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "jsx": "preserve"
+    "jsx": "react-jsx",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "moduleResolution": "Bundler",
+    "module": "ESNext"
   },
   "include": ["src/**/*"]
 }

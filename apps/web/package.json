@@ -2,17 +2,24 @@
   "name": "@aethra/web",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "build": "echo 'Web UI build scaffolded'",
-    "dev": "echo 'Web dev scaffolded'",
-    "clean": "rimraf .next",
-    "typecheck": "tsc --noEmit"
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/tests/**/*.test.js"
   },
   "dependencies": {
     "@aethra/api-contracts": "workspace:*",
-    "@aethra/shared-types": "workspace:*"
+    "@aethra/shared-types": "workspace:*",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
+    "@types/node": "^20.14.9",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "rimraf": "^5.0.7",
     "typescript": "^5.5.2"
   }
