@@ -23,6 +23,39 @@ export interface CreateLeadDto {
   siteState?: string;
 }
 
+export interface CreateProductModelDto {
+  categoryId: string;
+  brandId: string;
+  modelCode: string;
+  displayName: string;
+  description?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface SetVendorPricingDto {
+  organisationId: string;
+  modelId: string;
+  vendorSku: string;
+  standardCostPrice: number;
+  standardSellingPrice: number;
+  minSellingPrice?: number;
+  taxRatePercent?: number;
+  isAvailable?: boolean;
+}
+
+export interface RunEngineeringEstimateDto {
+  organisationId: string;
+  customerId?: string;
+  propertyId?: string;
+  leadId?: string;
+  profileCode?: string;
+  sanctionLoadKw: number;
+  usableAreaSqm: number;
+  tiltAngleDeg?: number;
+  azimuthDeg?: number;
+  discomMonthlyUnits?: number;
+}
+
 export interface QuotationLineItemInput {
   itemType: 'product' | 'service' | 'labour' | 'freight' | 'bos_package';
   catalogueProductId?: string;

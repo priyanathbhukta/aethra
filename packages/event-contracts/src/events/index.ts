@@ -73,6 +73,63 @@ export interface QuotationAcceptedEventPayload {
   acceptedAt: string;
 }
 
+export interface CrmLeadConvertedEventPayload {
+  leadId: string;
+  organisationId: string;
+  leadCode: string;
+  prospectName: string;
+  prospectPhone: string;
+  prospectEmail?: string;
+  customerId?: string;
+  quotationId?: string;
+  convertedByUserId: string;
+  convertedAt: string;
+}
+
+export interface CataloguePriceUpdatedEventPayload {
+  catalogueEntryId: string;
+  organisationId: string;
+  modelId: string;
+  vendorSku: string;
+  oldStandardSellingPrice: number;
+  newStandardSellingPrice: number;
+  updatedAt: string;
+}
+
+export interface EngineeringEstimateCompletedEventPayload {
+  estimateId: string;
+  organisationId: string;
+  estimateCode: string;
+  customerId?: string;
+  propertyId?: string;
+  recommendedCapacityKw: number;
+  annualGenerationKwh: number;
+  calculatedAt: string;
+}
+
+export interface EngineeringBomGeneratedEventPayload {
+  bomId: string;
+  bomVersionId: string;
+  estimateId: string;
+  organisationId: string;
+  versionNumber: number;
+  itemCount: number;
+  generatedAt: string;
+}
+
+export interface QuotationIssuedEventPayload {
+  quotationId: string;
+  revisionId: string;
+  organisationId: string;
+  quotationNumber: string;
+  revisionNumber: number;
+  customerId: string;
+  propertyId?: string;
+  totalPayableAmount: number;
+  validUntil: string;
+  issuedAt: string;
+}
+
 export interface StockReservedEventPayload {
   reservationId: string;
   organisationId: string;
