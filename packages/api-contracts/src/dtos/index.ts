@@ -191,3 +191,154 @@ export interface RevokeRelationshipDto {
   propertyId?: string;
   installationId?: string;
 }
+
+
+export interface CreateSupplierDto {
+  supplierCode?: string;
+  legalName: string;
+  tradeName?: string;
+  gstNumber?: string;
+  panTaxId?: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  paymentTermsDefault?: string;
+}
+
+export interface CreatePoLineDto {
+  catalogueProductId: string;
+  itemDescription: string;
+  orderedQuantity: number;
+  unit: string;
+  unitPrice: number;
+  taxRatePercent?: number;
+}
+
+export interface CreatePurchaseOrderDto {
+  supplierId: string;
+  destinationWarehouseId: string;
+  requisitionId?: string;
+  expectedDeliveryDate: string;
+  paymentTerms?: string;
+  shippingTerms?: string;
+  lines: CreatePoLineDto[];
+}
+
+export interface RecordGrnLineDto {
+  poLineId: string;
+  catalogueProductId: string;
+  quantityDelivered: number;
+  quantityAccepted: number;
+  quantityRejected?: number;
+  rejectionReason?: string;
+  batchCode?: string;
+  serialNumbers?: string[];
+}
+
+export interface RecordGoodsReceiptDto {
+  poId: string;
+  supplierId: string;
+  destinationWarehouseId: string;
+  deliveryChallanNumber: string;
+  transporterName?: string;
+  vehicleNumber?: string;
+  lines: RecordGrnLineDto[];
+}
+
+export interface CreateProjectDto {
+  projectName: string;
+  customerId: string;
+  propertyId: string;
+  quotationId?: string;
+  acceptedQuotationRevisionId?: string;
+  projectType?: string;
+  capacityKw: number;
+  plannedStartDate: string;
+  plannedCompletionDate: string;
+  siteContactName: string;
+  siteContactPhone: string;
+  siteAddress: string;
+  latitude?: number;
+  longitude?: number;
+  discomSubdivision?: string;
+  sanctionedLoadKw?: string;
+  discomApplicationNumber?: string;
+}
+
+export interface UpdateMilestoneDto {
+  status: 'pending' | 'in_progress' | 'completed' | 'delayed';
+  completedDate?: string;
+}
+
+export interface CreateProjectTaskDto {
+  milestoneId: string;
+  taskName: string;
+  description?: string;
+  priority?: 'low' | 'medium' | 'high' | 'critical';
+  dueDate: string;
+  estimatedHours?: number;
+}
+
+export interface AssignTaskDto {
+  assignedUserId: string;
+  roleOnTask?: 'lead' | 'assistant' | 'inspector';
+}
+
+export interface CompleteHandoverDto {
+  handoverDate: string;
+  commissioningReportDocId: string;
+  warrantyPackDocId: string;
+  discomInspectionLetterDocId?: string;
+}
+
+export interface CreateAmcContractDto {
+  customerId: string;
+  propertyId: string;
+  installationId: string;
+  contractTier: 'comprehensive' | 'non_comprehensive' | 'preventive_only';
+  visitsPerYear?: number;
+  contractAmount: number;
+  startDate: string;
+  endDate: string;
+}
+
+export interface CreateServiceTicketDto {
+  customerId: string;
+  propertyId: string;
+  installationId?: string;
+  amcId?: string;
+  ticketType: 'inverter_failure' | 'panel_damage' | 'generation_drop' | 'grid_tripping' | 'routine_check';
+  priority?: 'low' | 'medium' | 'high' | 'critical';
+  customerReportedIssue: string;
+}
+
+export interface AssignTechnicianDto {
+  technicianUserId: string;
+  scheduledAt: string;
+}
+
+export interface ServicePartUsedInput {
+  catalogueProductId: string;
+  itemName: string;
+  quantity?: number;
+  serialNumberRemoved?: string;
+  serialNumberInstalled?: string;
+  warrantyStatus?: 'covered_under_warranty' | 'chargeable' | 'amc_covered';
+  billedAmount?: number;
+}
+
+export interface RecordServiceVisitDto {
+  assignmentId: string;
+  arrivalTime: string;
+  departureTime?: string;
+  siteObservations: string;
+  rootCause?: string;
+  correctiveAction: string;
+  customerSignoffName?: string;
+  customerSignatureDocId?: string;
+  partsUsed?: ServicePartUsedInput[];
+}

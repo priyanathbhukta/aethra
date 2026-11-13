@@ -200,3 +200,76 @@ export interface AuditEventPayload {
   userAgent?: string;
   recordedAt: string;
 }
+
+
+export interface StockReceivedEventPayload {
+  receiptId: string;
+  receiptCode: string;
+  organisationId: string;
+  warehouseId: string;
+  catalogueProductId: string;
+  quantity: number;
+  unitCost: number;
+  purchaseOrderId?: string;
+  supplierId?: string;
+  receivedAt: string;
+}
+
+export interface StockIssuedEventPayload {
+  issueId: string;
+  issueCode: string;
+  organisationId: string;
+  warehouseId: string;
+  catalogueProductId: string;
+  quantity: number;
+  projectId?: string;
+  reservationId?: string;
+  issuedToUserId: string;
+  issuedAt: string;
+}
+
+export interface GoodsReceiptConfirmedEventPayload {
+  grnId: string;
+  grnCode: string;
+  organisationId: string;
+  poId: string;
+  supplierId: string;
+  destinationWarehouseId: string;
+  deliveryChallanNumber: string;
+  itemCount: number;
+  receivedAt: string;
+}
+
+export interface ProjectMilestonePublishedEventPayload {
+  milestoneId: string;
+  projectId: string;
+  organisationId: string;
+  milestoneName: string;
+  status: string;
+  overallProgressPercentage: number;
+  publishedAt: string;
+}
+
+export interface ProjectHandoverCompletedEventPayload {
+  handoverId: string;
+  projectId: string;
+  organisationId: string;
+  customerId: string;
+  propertyId: string;
+  capacityKw: number;
+  handoverDate: string;
+  commissioningReportDocId: string;
+  completedAt: string;
+}
+
+export interface ServiceTicketCreatedEventPayload {
+  ticketId: string;
+  ticketNumber: string;
+  organisationId: string;
+  customerId: string;
+  propertyId: string;
+  installationId?: string;
+  ticketType: string;
+  priority: string;
+  createdAt: string;
+}
