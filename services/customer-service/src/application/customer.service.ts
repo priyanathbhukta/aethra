@@ -336,4 +336,70 @@ export class CustomerApplicationService {
     );
     return result;
   }
+
+  /**
+   * Updates an installation status (e.g. to 'operational') upon project handover completion.
+   */
+  async updateInstallationStatus(cmd: {
+    propertyId: string;
+    installationId?: string;
+    status: 'planned' | 'under_construction' | 'commissioned' | 'operational' | 'decommissioned';
+    commissionedDate?: Date;
+    commissioningCertificateDocId?: string;
+    capacityKw?: number;
+  }) {
+    const now = new Date();
+    if (cmd.installationId) {
+      const updated = await this.db
+        .updateTable('property_installations')
+        .set({
+          status: cmd.status,
+          commissioned_date: cmd.commissionedDate || now,
+          commissioning_certificate_doc_id: cmd.commissioningCertificateDocId || null,
+          updated_at: now,
+        })
+        .where('id', '=', cmd.installationId)
+        .returningAll()
+        .executeTakeFirst();
+      if (updated) return updated;
+    }
+
+    const existing = await this.db
+      .selectFrom('property_installations')
+      .selectAll()
+      .where('property_id', '=', cmd.propertyId)
+      .executeTakeFirst();
+
+    if (existing) {
+      return await this.db
+        .updateTable('property_installations')
+        .set({
+          status: cmd.status,
+          commissioned_date: cmd.commissionedDate || now,
+          commissioning_certificate_doc_id: cmd.commissioningCertificateDocId || null,
+          updated_at: now,
+        })
+        .where('id', '=', existing.id)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+    }
+
+    return await this.db
+      .insertInto('property_installations')
+      .values({
+        id: crypto.randomUUID(),
+        property_id: cmd.propertyId,
+        installation_name: 'Solar PV Rooftop System',
+        system_type: 'solar_rooftop',
+        grid_type: 'on_grid',
+        capacity_kw: cmd.capacityKw || 10.0,
+        status: cmd.status,
+        commissioned_date: cmd.commissionedDate || now,
+        commissioning_certificate_doc_id: cmd.commissioningCertificateDocId || null,
+        created_at: now,
+        updated_at: now,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+  }
 }

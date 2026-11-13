@@ -370,10 +370,19 @@ importers:
 
   packages/testing:
     dependencies:
+      '@aethra/api-contracts':
+        specifier: workspace:*
+        version: link:../api-contracts
+      '@aethra/event-contracts':
+        specifier: workspace:*
+        version: link:../event-contracts
       '@aethra/shared-types':
         specifier: workspace:*
         version: link:../shared-types
     devDependencies:
+      '@types/node':
+        specifier: ^20.14.9
+        version: 20.19.43
       rimraf:
         specifier: ^5.0.7
         version: 5.0.10

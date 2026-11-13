@@ -18,6 +18,7 @@ export interface EventEnvelope<T = unknown> {
   tenantContext: EventTenantContext;
   signature?: string;
   data: T;
+  payload?: T;
 }
 
 export function createEventEnvelope<T>(
@@ -36,5 +37,6 @@ export function createEventEnvelope<T>(
     correlationId: tenantContext.correlationId,
     tenantContext,
     data,
+    payload: data,
   };
 }

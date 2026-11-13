@@ -372,6 +372,19 @@ export class InventoryApplicationService {
   }
 
   /**
+   * Lists all warehouses for an organisation.
+   */
+  async listWarehouses(organisationId: string) {
+    return await this.db
+      .selectFrom('warehouses')
+      .selectAll()
+      .where('organisation_id', '=', organisationId)
+      .where('is_active', '=', true)
+      .orderBy('name', 'asc')
+      .execute();
+  }
+
+  /**
    * Retrieves stock balance for a warehouse and product.
    */
   async getStockBalance(organisationId: string, warehouseId: string, catalogueProductId: string) {

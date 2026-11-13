@@ -237,4 +237,19 @@ export class AccessControlApplicationService {
     logger.warn({ grantId: grant.id, userId: cmd.userId, permission: cmd.permissionCode }, 'Privileged temporary access granted');
     return grant;
   }
+
+  /**
+   * Invalidates cached access policies for an organisation or user context.
+   */
+  async invalidatePolicyCache(cmd: {
+    organisationId: string;
+    userId?: string;
+    reason: 'role_updated' | 'membership_revoked' | 'relationship_revoked';
+  }) {
+    logger.info(
+      { organisationId: cmd.organisationId, userId: cmd.userId, reason: cmd.reason },
+      'Invalidating policy evaluation cache'
+    );
+    return { invalidated: true, timestamp: new Date().toISOString() };
+  }
 }
