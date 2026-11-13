@@ -19,6 +19,36 @@ export interface OrganisationCreatedEventPayload {
   createdAt: string;
 }
 
+export interface CustomerCreatedEventPayload {
+  customerId: string;
+  accountType: 'individual' | 'commercial' | 'industrial' | 'society';
+  legalName: string;
+  displayName: string;
+  primaryEmail: string;
+  primaryPhone: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface VendorRelationshipCreatedEventPayload {
+  relationshipId: string;
+  organisationId: string;
+  customerId: string;
+  purposeCode: string;
+  status: string;
+  initiatedAt: string;
+}
+
+export interface VendorRelationshipActivatedEventPayload {
+  relationshipId: string;
+  organisationId: string;
+  customerId: string;
+  purposeCode: string;
+  status: string;
+  activatedAt: string;
+  expiresAt?: string;
+}
+
 export interface VendorRelationshipRevokedEventPayload {
   relationshipId: string;
   organisationId: string;

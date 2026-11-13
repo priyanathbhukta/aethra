@@ -91,3 +91,70 @@ export interface CreateAuditEventDto {
   afterState?: Record<string, unknown>;
   result?: 'success' | 'failure' | 'denied';
 }
+
+export interface CreateCustomerDto {
+  accountType?: 'individual' | 'commercial' | 'industrial' | 'society';
+  legalName: string;
+  displayName?: string;
+  primaryEmail: string;
+  primaryPhone: string;
+  alternatePhone?: string;
+  panTaxId?: string;
+  gstNumber?: string;
+  languagePreference?: string;
+}
+
+export interface CreateCustomerPropertyDto {
+  propertyName: string;
+  propertyType: 'residential' | 'commercial' | 'industrial' | 'agricultural';
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country?: string;
+  latitude?: number;
+  longitude?: number;
+  discomName?: string;
+  consumerNumber?: string;
+  sanctionedLoadKw?: number;
+  tariffRate?: number;
+}
+
+export interface CreatePropertyInstallationDto {
+  installationName: string;
+  systemType: 'solar_rooftop' | 'solar_ground' | 'bess' | 'ev_charging' | 'hybrid';
+  gridType?: 'on_grid' | 'off_grid' | 'hybrid' | 'microgrid';
+  capacityKw: number;
+}
+
+export interface InitiateRelationshipDto {
+  organisationId: string;
+  customerId: string;
+  purposeCode: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface AcceptConsentDto {
+  relationshipId: string;
+  userId: string;
+  consentVersion: string;
+  consentMethod?: 'digital_signature' | 'otp_confirmation' | 'contract_upload';
+  ipAddress: string;
+  userAgent: string;
+}
+
+export interface GrantPropertyAccessDto {
+  relationshipId: string;
+  propertyId: string;
+  accessScope?: 'read_only' | 'read_write' | 'engineering_only';
+}
+
+export interface RevokeRelationshipDto {
+  relationshipId: string;
+  revocationReason: string;
+  revokedByUserId: string;
+  revokedByRole?: 'customer_owner' | 'vendor_owner' | 'platform_admin' | 'system_auto';
+  propertyId?: string;
+  installationId?: string;
+}
