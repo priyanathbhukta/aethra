@@ -2,16 +2,19 @@
   "name": "@aethra/mobile",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "build": "echo 'Mobile build scaffolded'",
+    "build": "tsc",
     "clean": "rimraf dist",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/tests/**/*.test.js"
   },
   "dependencies": {
     "@aethra/api-contracts": "workspace:*",
     "@aethra/shared-types": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "^20.14.9",
     "rimraf": "^5.0.7",
     "typescript": "^5.5.2"
   }

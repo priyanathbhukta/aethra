@@ -53,8 +53,10 @@ app.post('/api/v1/mobile/sync/batch', (req: Request, res: Response) => {
 });
 
 const PORT = config.port || 8002;
-app.listen(PORT, () => {
-  logger.info(`[Mobile BFF] Server running on port ${PORT}`);
-});
+if (!process.argv.some((arg) => arg.includes('test'))) {
+  app.listen(PORT, () => {
+    logger.info(`[Mobile BFF] Server running on port ${PORT}`);
+  });
+}
 
 export default app;
