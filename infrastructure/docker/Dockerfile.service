@@ -1,0 +1,44 @@
+# ==============================================================================
+# AETHRA — Production Multi-Stage Dockerfile for Microservices
+# ==============================================================================
+
+# Stage 1: Build stage
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install pnpm globally
+RUN corepack enable && corepack prepare pnpm@12.16.1 --activate
+
+# Copy monorepo configuration files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.base.json ./
+
+# Copy all packages and services source
+COPY packages/ ./packages/
+COPY services/ ./services/
+COPY apps/ ./apps/
+
+# Install dependencies and build monorepo
+RUN pnpm install --frozen-lockfile
+RUN pnpm turbo run build
+
+# Stage 2: Production Minimal Runtime
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+# Set production environment
+ENV NODE_ENV=production
+
+# Install curl for container health check
+RUN apk add --no-cache curl
+
+# Create non-root app user
+USER node
+
+# Copy built artifacts from builder
+COPY --chown=node:node --from=builder /app ./
+
+# Default container entrypoint
+EXPOSE 3000
+CMD ["node", "dist/main.js"]

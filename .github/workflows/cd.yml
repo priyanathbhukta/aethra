@@ -1,0 +1,104 @@
+name: AETHRA CD Production Deployment
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-infrastructure:
+    name: Terraform Plan & Apply
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/aethra-github-actions-deployer
+          aws-region: ap-south-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.0
+
+      - name: Terraform Init & Validate
+        run: |
+          cd infrastructure/terraform
+          terraform init
+          terraform validate
+
+      - name: Terraform Plan
+        run: |
+          cd infrastructure/terraform
+          terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        run: |
+          cd infrastructure/terraform
+          terraform apply -auto-approve tfplan
+
+  build-and-deploy-services:
+    name: Build Docker & Deploy to ECS Fargate
+    needs: [deploy-infrastructure]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - web-bff
+          - mobile-bff
+          - identity-service
+          - organisation-service
+          - access-control-service
+          - subscription-service
+          - customer-service
+          - vendor-relationship-service
+          - crm-service
+          - catalogue-service
+          - engineering-service
+          - quotation-service
+          - inventory-service
+          - procurement-service
+          - project-service
+          - document-service
+          - notification-service
+          - service-management-service
+          - reporting-service
+          - integration-service
+          - audit-service
+          - ai-service
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/aethra-github-actions-deployer
+          aws-region: ap-south-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push Docker image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: aethra/${{ matrix.service }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest -f infrastructure/docker/Dockerfile.service .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$REPOSITORY:latest
+
+      - name: Deploy to ECS Fargate Service
+        run: |
+          aws ecs update-service --cluster aethra-production-ecs-cluster --service aethra-${{ matrix.service }} --force-new-deployment --region ap-south-1
