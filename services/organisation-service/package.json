@@ -2,13 +2,14 @@
   "name": "@aethra/organisation-service",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "start": "node dist/main.js",
     "dev": "tsc --watch",
     "clean": "rimraf dist",
     "typecheck": "tsc --noEmit",
-    "test": "node --test dist/tests/**/*.test.js || true"
+    "test": "node --test dist/tests/**/*.test.js"
   },
   "dependencies": {
     "@aethra/api-contracts": "workspace:*",

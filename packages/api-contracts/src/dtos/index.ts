@@ -61,3 +61,33 @@ export interface PostStockMovementDto {
   batchCode?: string;
   serialNumbers?: string[];
 }
+
+export interface ActivateSubscriptionDto {
+  organisationId: string;
+  planId: string;
+  billingContactEmail?: string;
+  paymentMetadata?: Record<string, unknown>;
+}
+
+export interface RecordUsageDto {
+  organisationId: string;
+  featureCode: string;
+  quantity: number;
+  idempotencyKey: string;
+  recordedBy?: string;
+}
+
+export interface CreateAuditEventDto {
+  organisationId?: string;
+  actorUserId?: string;
+  actorRole?: string;
+  action: string;
+  resourceType: string;
+  resourceId?: string;
+  requestCorrelationId?: string;
+  clientIp?: string;
+  userAgent?: string;
+  beforeState?: Record<string, unknown>;
+  afterState?: Record<string, unknown>;
+  result?: 'success' | 'failure' | 'denied';
+}

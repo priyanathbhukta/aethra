@@ -72,3 +72,44 @@ export interface PolicyInvalidatedEventPayload {
   reason: 'role_updated' | 'membership_revoked' | 'relationship_revoked';
   invalidatedAt: string;
 }
+
+export interface SubscriptionActivatedEventPayload {
+  subscriptionId: string;
+  organisationId: string;
+  planId: string;
+  planCode: string;
+  status: string;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  activatedAt: string;
+}
+
+export interface SubscriptionSuspendedEventPayload {
+  subscriptionId: string;
+  organisationId: string;
+  reason: string;
+  suspendedAt: string;
+}
+
+export interface SubscriptionLimitReachedEventPayload {
+  subscriptionId: string;
+  organisationId: string;
+  featureCode: string;
+  maxAllowed: number;
+  currentUsage: number;
+  reachedAt: string;
+}
+
+export interface AuditEventPayload {
+  auditId: string;
+  organisationId?: string;
+  actorUserId?: string;
+  actorRole?: string;
+  action: string;
+  resourceType: string;
+  resourceId?: string;
+  requestCorrelationId?: string;
+  clientIp?: string;
+  userAgent?: string;
+  recordedAt: string;
+}
