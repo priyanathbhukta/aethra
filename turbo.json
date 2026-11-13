@@ -18,9 +18,9 @@
       "dependsOn": ["^build"]
     },
     "test": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "build"],
       "inputs": ["$TURBO_DEFAULT$", "test/**/*", "**/*.spec.ts", "**/*.test.ts"],
-      "outputs": ["coverage/**"]
+      "outputs": []
     },
     "test:integration": {
       "cache": false
