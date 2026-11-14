@@ -18,36 +18,28 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Validate AWS Credentials Configuration
+      - name: Validate AWS OIDC Configuration
         shell: bash
         env:
-          ROLE_SECRET: ${{ secrets.AWS_ROLE_ARN }}
           ROLE_VAR: ${{ vars.AWS_ROLE_ARN }}
-          KEY_SECRET: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          KEY_VAR: ${{ vars.AWS_ACCESS_KEY_ID }}
+          ROLE_SECRET: ${{ secrets.AWS_ROLE_ARN }}
         run: |
-          ROLE="${ROLE_SECRET:-$ROLE_VAR}"
-          KEY="${KEY_SECRET:-$KEY_VAR}"
-          echo "AWS Credentials presence check:"
-          echo "  - AWS_ROLE_ARN in secrets: $([ -n "$ROLE_SECRET" ] && echo 'FOUND' || echo 'NOT FOUND')"
+          ROLE="${ROLE_VAR:-$ROLE_SECRET}"
+          echo "AWS OIDC Role check:"
           echo "  - AWS_ROLE_ARN in variables: $([ -n "$ROLE_VAR" ] && echo 'FOUND' || echo 'NOT FOUND')"
-          echo "  - AWS_ACCESS_KEY_ID in secrets: $([ -n "$KEY_SECRET" ] && echo 'FOUND' || echo 'NOT FOUND')"
-          echo "  - AWS_ACCESS_KEY_ID in variables: $([ -n "$KEY_VAR" ] && echo 'FOUND' || echo 'NOT FOUND')"
+          echo "  - AWS_ROLE_ARN in secrets:   $([ -n "$ROLE_SECRET" ] && echo 'FOUND' || echo 'NOT FOUND')"
 
-          if [ -z "$ROLE" ] && [ -z "$KEY" ]; then
-            echo "::error::Neither AWS_ROLE_ARN nor AWS_ACCESS_KEY_ID was found in GitHub Secrets or Variables."
-            echo "Please check: Repository Settings -> Secrets and variables -> Actions"
+          if [ -z "$ROLE" ]; then
+            echo "::error::AWS_ROLE_ARN is missing. Please configure AWS_ROLE_ARN in GitHub: Settings -> Secrets and variables -> Actions."
             exit 1
           fi
-          echo "Credentials configuration check passed."
+          echo "AWS OIDC Role validation passed."
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN || vars.AWS_ROLE_ARN }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID || vars.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.AWS_REGION || secrets.AWS_REGION || 'ap-south-1' }}
+          role-to-assume: ${{ vars.AWS_ROLE_ARN || secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'ap-south-1' }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -105,13 +97,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN || vars.AWS_ROLE_ARN }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID || vars.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.AWS_REGION || secrets.AWS_REGION || 'ap-south-1' }}
+          role-to-assume: ${{ vars.AWS_ROLE_ARN || secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'ap-south-1' }}
 
       - name: Login to Amazon ECR
         id: login-ecr
