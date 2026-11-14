@@ -73,3 +73,9 @@ variable "ecs_task_memory" {
   type        = number
   default     = 1024
 }
+
+variable "github_repo" {
+  description = "GitHub repository path for OIDC trust relationship (owner/repo)"
+  type        = string
+  default     = "priyanathbhukta/aethra"
+}

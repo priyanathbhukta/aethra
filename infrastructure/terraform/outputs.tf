@@ -66,3 +66,8 @@ output "cognito_mobile_client_id" {
   description = "Client ID for the Mobile App in Cognito"
   value       = aws_cognito_user_pool_client.mobile.id
 }
+
+output "github_actions_role_arn" {
+  description = "ARN of the IAM Role assumed by GitHub Actions via OIDC"
+  value       = aws_iam_role.github_actions_deployer.arn
+}
