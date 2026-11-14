@@ -18,20 +18,34 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Validate AWS Secrets
+      - name: Validate AWS Credentials Configuration
         shell: bash
+        env:
+          ROLE_SECRET: ${{ secrets.AWS_ROLE_ARN }}
+          ROLE_VAR: ${{ vars.AWS_ROLE_ARN }}
+          KEY_SECRET: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          KEY_VAR: ${{ vars.AWS_ACCESS_KEY_ID }}
         run: |
-          if [ -z "${{ secrets.AWS_ROLE_ARN }}" ] && [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ]; then
-            echo "::error::Neither AWS_ROLE_ARN nor AWS_ACCESS_KEY_ID is configured in GitHub Secrets."
-            echo "Please add AWS_ROLE_ARN (for IAM OIDC) or AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY in GitHub: Settings -> Secrets and variables -> Actions."
+          ROLE="${ROLE_SECRET:-$ROLE_VAR}"
+          KEY="${KEY_SECRET:-$KEY_VAR}"
+          echo "AWS Credentials presence check:"
+          echo "  - AWS_ROLE_ARN in secrets: $([ -n "$ROLE_SECRET" ] && echo 'FOUND' || echo 'NOT FOUND')"
+          echo "  - AWS_ROLE_ARN in variables: $([ -n "$ROLE_VAR" ] && echo 'FOUND' || echo 'NOT FOUND')"
+          echo "  - AWS_ACCESS_KEY_ID in secrets: $([ -n "$KEY_SECRET" ] && echo 'FOUND' || echo 'NOT FOUND')"
+          echo "  - AWS_ACCESS_KEY_ID in variables: $([ -n "$KEY_VAR" ] && echo 'FOUND' || echo 'NOT FOUND')"
+
+          if [ -z "$ROLE" ] && [ -z "$KEY" ]; then
+            echo "::error::Neither AWS_ROLE_ARN nor AWS_ACCESS_KEY_ID was found in GitHub Secrets or Variables."
+            echo "Please check: Repository Settings -> Secrets and variables -> Actions"
             exit 1
           fi
+          echo "Credentials configuration check passed."
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN || vars.AWS_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID || vars.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION || secrets.AWS_REGION || 'ap-south-1' }}
 
@@ -94,8 +108,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN || vars.AWS_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID || vars.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION || secrets.AWS_REGION || 'ap-south-1' }}
 
