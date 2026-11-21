@@ -9,51 +9,72 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  AWS_ROLE_ARN: arn:aws:iam::067518243733:role/aethra-github-actions-deployer
+  AWS_REGION: ap-south-1
+
 jobs:
   deploy-infrastructure:
     name: Terraform Plan & Apply
     runs-on: ubuntu-latest
     environment: production
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Validate AWS OIDC Configuration
+      - name: Validate AWS Configuration
         shell: bash
-        env:
-          ROLE_VAR: ${{ vars.AWS_ROLE_ARN }}
-          ROLE_SECRET: ${{ secrets.AWS_ROLE_ARN }}
         run: |
-          ROLE="${ROLE_VAR:-$ROLE_SECRET}"
-          CLEAN_ROLE=$(echo "$ROLE" | tr -d '[:space:]"')
-          echo "AWS OIDC Role check:"
-          echo "  - AWS_ROLE_ARN in variables: $([ -n "$ROLE_VAR" ] && echo 'FOUND' || echo 'NOT FOUND')"
-          echo "  - AWS_ROLE_ARN in secrets:   $([ -n "$ROLE_SECRET" ] && echo 'FOUND' || echo 'NOT FOUND')"
+          echo "Checking AWS configuration..."
 
-          if [ -z "$CLEAN_ROLE" ]; then
-            echo "::error::AWS_ROLE_ARN is missing. Please configure AWS_ROLE_ARN in GitHub: Settings -> Secrets and variables -> Actions."
+          if [ "$AWS_ROLE_ARN" != "arn:aws:iam::067518243733:role/aethra-github-actions-deployer" ]; then
+            echo "::error::Incorrect AWS Role ARN"
             exit 1
           fi
 
-          echo "Target Account ARN prefix: $(echo "$CLEAN_ROLE" | cut -d':' -f1-5)"
-          echo "CLEAN_ROLE_ARN=$CLEAN_ROLE" >> $GITHUB_ENV
+          echo "Role ARN: $AWS_ROLE_ARN"
+          echo "Region: $AWS_REGION"
 
-      - name: Inspect GitHub OIDC Token Claims
+      - name: Inspect GitHub OIDC Claims
         shell: bash
         run: |
-          TOKEN=$(curl -sLS -H "User-Agent: actions/oidc-client" -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" | jq -r '.value // empty')
-          if [ -n "$TOKEN" ]; then
-            echo "GitHub OIDC Token Claims:"
-            echo "$TOKEN" | cut -d'.' -f2 | base64 -d 2>/dev/null | jq '{iss, aud, sub, repository, ref, environment}' || true
+          TOKEN=$(curl -sS \
+            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" \
+            | jq -r '.value')
+
+          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+            echo "::error::Unable to retrieve GitHub OIDC token"
+            exit 1
           fi
+
+          export TOKEN
+
+          python3 -c '
+          import os, json, base64
+          token = os.environ["TOKEN"]
+          payload = token.split(".")[1]
+          payload += "=" * (-len(payload) % 4)
+          claims = json.loads(base64.urlsafe_b64decode(payload))
+          print(json.dumps({
+              "iss": claims.get("iss"),
+              "aud": claims.get("aud"),
+              "sub": claims.get("sub"),
+              "repository": claims.get("repository"),
+              "ref": claims.get("ref")
+          }, indent=2))
+          '
 
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.CLEAN_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION || 'ap-south-1' }}
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
           audience: sts.amazonaws.com
-          role-session-tagging: false
+
+      - name: Verify AWS Identity
+        run: aws sts get-caller-identity
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -61,27 +82,27 @@ jobs:
           terraform_version: 1.8.0
 
       - name: Terraform Init & Validate
+        working-directory: infrastructure/terraform
         run: |
-          cd infrastructure/terraform
           terraform init
           terraform validate
 
       - name: Terraform Plan
-        run: |
-          cd infrastructure/terraform
-          terraform plan -out=tfplan
+        working-directory: infrastructure/terraform
+        run: terraform plan -out=tfplan
 
       - name: Terraform Apply
-        run: |
-          cd infrastructure/terraform
-          terraform apply -auto-approve tfplan
+        working-directory: infrastructure/terraform
+        run: terraform apply -auto-approve tfplan
 
   build-and-deploy-services:
     name: Build Docker & Deploy to ECS Fargate
     needs: [deploy-infrastructure]
     runs-on: ubuntu-latest
     environment: production
+
     strategy:
+      fail-fast: false
       matrix:
         service:
           - api-gateway
@@ -107,6 +128,7 @@ jobs:
           - integration-service
           - audit-service
           - ai-service
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -114,25 +136,35 @@ jobs:
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN || secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION || 'ap-south-1' }}
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
           audience: sts.amazonaws.com
-          role-session-tagging: false
+
+      - name: Verify AWS Identity
+        run: aws sts get-caller-identity
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag, and push Docker image
+      - name: Build, Tag and Push Docker Image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: aethra/${{ matrix.service }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest -f infrastructure/docker/Dockerfile.service .
+          docker build \
+            -t $REGISTRY/$REPOSITORY:$IMAGE_TAG \
+            -t $REGISTRY/$REPOSITORY:latest \
+            -f infrastructure/docker/Dockerfile.service .
+
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
           docker push $REGISTRY/$REPOSITORY:latest
 
-      - name: Deploy to ECS Fargate Service
+      - name: Deploy to ECS Fargate
         run: |
-          aws ecs update-service --cluster aethra-production-ecs-cluster --service aethra-${{ matrix.service }} --force-new-deployment --region ap-south-1
+          aws ecs update-service \
+            --cluster aethra-production-ecs-cluster \
+            --service aethra-${{ matrix.service }} \
+            --force-new-deployment \
+            --region "$AWS_REGION"
